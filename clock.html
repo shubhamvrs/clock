@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Alarm Clock</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5; /* Background color */
+        }
+
+        .clock {
+            width: 250px;
+            height: 250px;
+            background-color: #222; /* Clock background color */
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7); /* Clock shadow */
+        }
+
+        .circle {
+            width: 200px;
+            height: 200px;
+            background-color: #111; /* Circle background color */
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Circle shadow */
+        }
+
+        .time {
+            font-size: 48px;
+            color: #fff; /* Text color */
+            text-align: center;
+            font-weight: bold; /* Text font weight */
+            font-family: 'Roboto', Arial, sans-serif; /* Text font */
+        }
+
+        .clock::before {
+            content: "";
+            width: 30px;
+            height: 30px;
+            background-color: #fff; /* Center circle color */
+            border-radius: 50%;
+            position: absolute;
+            top: calc(50% - 15px);
+            left: calc(50% - 15px);
+        }
+
+        .alarm {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .alarm-label {
+            font-size: 18px;
+        }
+
+        .alarm-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .alarm-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+        }
+
+        .alarm-remove {
+            background-color: #ff5252;
+            color: #fff;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="clock">
+        <div class="circle">
+            <div class="time" id="time"></div>
+        </div>
+    </div>
+    <div class="alarm">
+        <label for="alarmTime" class="alarm-label">Set Alarm:</label>
+        <input type="time" id="alarmTime" class="alarm-label">
+        <button id="setAlarm">Set</button>
+        <ul id="alarmList" class="alarm-list"></ul>
+    </div>
+    <audio id="alarmSound" src="alarm.mp3" type="audio/mpeg"></audio>
+    <script>
+        const alarmList = document.getElementById("alarmList");
+        const alarmSound = document.getElementById("alarmSound");
+
+        function updateTime() {
+            const timeElement = document.getElementById("time");
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, "0");
+            const minutes = now.getMinutes().toString().padStart(2, "0");
+            const seconds = now.getSeconds().toString().padStart(2, "0");
+            const timeString = `${hours}:${minutes}:${seconds}`;
+            timeElement.textContent = timeString;
+
+            checkAlarms(hours, minutes, seconds);
+        }
+
+        function checkAlarms(currentHours, currentMinutes, currentSeconds) {
+            const alarms = document.querySelectorAll(".alarm-item");
+            alarms.forEach((alarm) => {
+                const alarmTime = alarm.getAttribute("data-time");
+                const [alarmHour, alarmMinute] = alarmTime.split(":");
+
+                if (
+                    currentHours === alarmHour &&
+                    currentMinutes === alarmMinute &&
+                    currentSeconds === "00"
+                ) {
+                    const alarmName = alarm.getAttribute("data-name");
+                    alert(`Alarm: ${alarmName}`);
+                    alarmSound.play();
+                    alarm.remove();
+                }
+            });
+        }
+
+        // Update the time every second
+        setInterval(updateTime, 1000);
+
+        // Initial call to display the time immediately
+        updateTime();
+
+        // Set alarm button click event
+        const setAlarmButton = document.getElementById("setAlarm");
+        setAlarmButton.addEventListener("click", function () {
+            const alarmTimeInput = document.getElementById("alarmTime");
+            const alarmTime = alarmTimeInput.value;
+            const alarmName = prompt("Enter Alarm Name:");
+
+            if (alarmTime && alarmName) {
+                createAlarm(alarmTime, alarmName);
+                alarmTimeInput.value = ""; // Clear the input
+            }
+        });
+
+        function createAlarm(time, name) {
+            const alarmItem = document.createElement("li");
+            alarmItem.textContent = `${name} (${time})`;
+            alarmItem.setAttribute("data-time", time);
+            alarmItem.setAttribute("data-name", name);
+            alarmItem.classList.add("alarm-item");
+
+            const removeButton = document.createElement("button");
+            removeButton.textContent = "Remove";
+            removeButton.classList.add("alarm-remove");
+            removeButton.addEventListener("click", function () {
+                alarmItem.remove();
+            });
+
+            alarmItem.appendChild(removeButton);
+            alarmList.appendChild(alarmItem);
+        }
+    </script>
+</body>
+</html>
